@@ -3,6 +3,7 @@ import React from 'react'
 const RegisterForm = () => {
     return (
         <>
+            <input type="text" placeholder='Ingrese código de colaborador/estudiante' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' />
             <div className='flex flex-row w-full'>
                 {/*PRIMERA COLUMNA*/}
                 <div className='flex flex-col w-1/2 h-72 items-center justify-center'>

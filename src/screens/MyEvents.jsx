@@ -6,8 +6,9 @@ import getUnsplashImage from "../services/unSplash";
 import saveEvents from '../services/createEvent';
 import Modal from '../components/Modal';
 import EventModal from '../components/EventModal';
+import getEventById from '../services/getEventById';
 
-const EventsPage = () => {
+const MyEvents = () => {
     const [eventosConImagen, setEventosConImagen] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [showEventModal, setShowEventModal] = useState(false);
@@ -19,7 +20,7 @@ const EventsPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await allEvents();
+                const response = await getEventById();
                 const eventosConImagenTemp = await Promise.all(response.map(async (evento) => {
                     const imagen = await getUnsplashImage(evento.titulo);
                     return { ...evento, imagen };
@@ -119,4 +120,4 @@ const EventsPage = () => {
     );
 }
 
-export default EventsPage;
+export default MyEvents

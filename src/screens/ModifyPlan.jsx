@@ -19,7 +19,7 @@ function ModifyPlan() {
     const [direccion, setDireccion] = useState("");
     const [city, setCity] = useState("");
     const [facultades, setFacultades] = useState([]);
-    const [facultadesSeleccionadas,setFacultadesSeleccionadas] = useState([]);
+    const [facultadesSeleccionadas, setFacultadesSeleccionadas] = useState([]);
     const [programas, setProgramas] = useState([]);
     const [programasSeleccionados, setProgramasSeleccionados] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
@@ -40,6 +40,7 @@ function ModifyPlan() {
         const fetchEvent = async () => {
             try {
                 const data = await getEventById(id);
+                console.log(data);
                 setTitulo(data.titulo ? data.titulo : '');
                 setCategorias(data.categoria ? data.categoria : []);
                 setDescripcion(data.descripcion ? data.descripcion : '');
@@ -52,7 +53,7 @@ function ModifyPlan() {
                 setEstado(data.estado ? data.estado : true);
                 setFacultadesSeleccionadas(data.facultades ? data.facultades : []);
                 setProgramasSeleccionados(data.programasSeleccionados ? data.programasSeleccionados : []);
-                setRolesSeleccionados(data.rolesSeleccionados ? data.rolesSeleccionados : {});
+                setRolesSeleccionados(data.participantes ? data.participantes : {});
             } catch (error) {
                 console.error("Existe un error al obtener el evento", error);
             }
@@ -82,7 +83,7 @@ function ModifyPlan() {
             } catch (error) {
                 console.error("Existe un error al obtener los usuarios", error);
             }
-        };  
+        };
         fetchUsuarios();
     }, []);
 
@@ -165,7 +166,7 @@ function ModifyPlan() {
         <div className=''>
             <Sidebar />
             <div className='flex-grow p-4 ml-72 flex justify-center'>
-            <form onSubmit={handleSubmit} className="w-[500px] my-10">
+                <form onSubmit={handleSubmit} className="w-[500px] my-10">
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="titulo">Título</label>
                         <input type="text" id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
@@ -208,7 +209,7 @@ function ModifyPlan() {
                             ))}
                         </div>
                     </div>
-                    {programas && programas.length > 0 
+                    {programas && programas.length > 0
                         ? (
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="programas">Programas</label>
@@ -229,36 +230,37 @@ function ModifyPlan() {
                             </div>
                         )
                         : null
-                        }
+                    }
                     {usuarios && usuarios.length > 0 ? (
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="programas">Participantes</label>
-                <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    {usuarios.map((participante, index) => (
-                        <div key={index} className="flex items-center mb-2">
-                            <input
-                                type="checkbox"
-                                id={`participante-${index}`}
-                                value={participante.nombre}
-                                className="mr-2"
-                                defaultChecked={participante.id === facultadesSeleccionadas.find(facultadSeleccionada => facultadSeleccionada === participante.id) ? false : true}
-                            />
-                            <label htmlFor={`participante-${index}`} className="mr-4">{participante.nombre}</label>
-                            <select
-                                onChange={(e) => handleRoleChange(index, e.target.value, participante.id)}
-                                className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                defaultValue={rolesSeleccionados[participante.id] ? rolesSeleccionados[participante.id].role : ""}
-                            >
-                                <option value="">Selecciona un rol</option>
-                                <option value="asistente">Asistente</option>
-                                <option value="conferencista">Conferencista</option>
-                                <option value="facilitador">Facilitador</option>
-                            </select>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="programas">Participantes</label>
+                            <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                {usuarios.map((participante, index) => (
+                                    <div key={index} className="flex items-center mb-2">
+                                        <input
+                                            type="checkbox"
+                                            id={`participante-${index}`}
+                                            value={participante.nombre}
+                                            className="mr-2"
+                                            defaultChecked={rolesSeleccionados.length > 0 && rolesSeleccionados.some((rol) => rol.id === participante.id)}
+                                        />
+
+                                        <label htmlFor={`participante-${index}`} className="mr-4">{participante.nombre}</label>
+                                        <select
+                                            onChange={(e) => handleRoleChange(index, e.target.value, participante.id)}
+                                            className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            defaultValue={rolesSeleccionados.length > 0 && rolesSeleccionados.map((rol) => rol.id == participante.id ? rol.role : 'default')}
+                                        >
+                                            <option value="default">Selecciona un rol</option>
+                                            <option value="asistente">Asistente</option>
+                                            <option value="conferencista">Conferencista</option>
+                                            <option value="facilitador">Facilitador</option>
+                                        </select>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-        ) : null
+                    ) : null
                     }
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="estado">Estado</label>
