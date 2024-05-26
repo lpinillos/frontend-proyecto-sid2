@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import auth from '../services/loginUsers';
 
@@ -21,13 +21,11 @@ const LoginForm = () => {
         try {
             const user = await auth(username, password);
             if (user) {
+                localStorage.setItem('user', JSON.stringify(user));
                 navigate('/Events');
-                console.log("Ingreso Exitoso:", user);
             } else {
                 setErrorMessage("Usuario o contraseña incorrectos");
             }
-            localStorage.setItem('user', JSON.stringify(user));
-
         } catch (error) {
             setErrorMessage("Usuario o contraseña incorrectos");
         }

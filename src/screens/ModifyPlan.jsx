@@ -1,10 +1,15 @@
+import Sidebar from "../components/Sidebar";
+import { useParams } from "react-router-dom";
 import { useState, useEffect } from 'react';
-import saveEvents from '../services/createEvent';
 import allFacultades from '../services/allFacultades';
 import getProgramas from '../services/getProgramas';
 import getUsers from '../services/getUsers';
+import { Link } from 'react-router-dom';
+import getEventById from "../services/getEventById";
+import updateEvent from "../services/updateEvent";
 
-const Modal = ({ show, onClose, onCreate }) => {
+function ModifyPlan() {
+
     const [titulo, setTitulo] = useState("");
     const [categorias, setCategorias] = useState([""]);
     const [descripcion, setDescripcion] = useState("");
@@ -19,6 +24,7 @@ const Modal = ({ show, onClose, onCreate }) => {
     const [programasSeleccionados, setProgramasSeleccionados] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
     const [rolesSeleccionados, setRolesSeleccionados] = useState({});
+    const { id } = useParams();
 
     const handleRoleChange = (index, role, userCode) => {
         setRolesSeleccionados(prevRoles => ({
@@ -29,6 +35,31 @@ const Modal = ({ show, onClose, onCreate }) => {
             }
         }));
     };
+
+    useEffect(() => {
+        const fetchEvent = async () => {
+            try {
+                const data = await getEventById(id);
+                setTitulo(data.titulo ? data.titulo : '');
+                setCategorias(data.categoria ? data.categoria : []);
+                setDescripcion(data.descripcion ? data.descripcion : '');
+                setFecha(data.fecha ? data.fecha : '');
+                if (data.lugarDelEvento) {
+                    setNombreEvento(data.lugarDelEvento.name ? data.lugarDelEvento.name : '');
+                    setDireccion(data.lugarDelEvento.direccion ? data.lugarDelEvento.direccion : '');
+                    setCity(data.lugarDelEvento.city ? data.lugarDelEvento.city : '');
+                }
+                setEstado(data.estado ? data.estado : true);
+                setFacultadesSeleccionadas(data.facultades ? data.facultades : []);
+                setProgramasSeleccionados(data.programasSeleccionados ? data.programasSeleccionados : []);
+                setRolesSeleccionados(data.rolesSeleccionados ? data.rolesSeleccionados : {});
+            } catch (error) {
+                console.error("Existe un error al obtener el evento", error);
+            }
+        };
+
+        fetchEvent();
+    }, [id]);
 
     useEffect(() => {
         const fetchFacultades = async () => {
@@ -87,6 +118,7 @@ const Modal = ({ show, onClose, onCreate }) => {
         }
     };
 
+
     const handleProgramaChange = (isChecked, codigoPrograma) => {
         if (isChecked) {
             setProgramasSeleccionados([...programasSeleccionados, codigoPrograma]);
@@ -100,49 +132,40 @@ const Modal = ({ show, onClose, onCreate }) => {
         setCategorias(newCategorias);
     };
 
+    const prepararDatosParticipantes = (rolesSeleccionados) => {
+        return Object.keys(rolesSeleccionados).map(key => ({
+            id: rolesSeleccionados[key].userCode,
+            role: rolesSeleccionados[key].role
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(rolesSeleccionados);
+        const newParticipantes = prepararDatosParticipantes(rolesSeleccionados);
+        console.log(newParticipantes);
         const newEvent = {
             titulo,
             categoria: categorias,
             descripcion,
             fecha,
             estado,
-            nombreEvento,
-            direccion,
-            city,
-            facultadesSeleccionadas,
-            programasSeleccionados,
-            rolesSeleccionados
+            lugarDelEvento: {
+                name: nombreEvento,
+                direccion,
+                city,
+            },
+            facultades: facultadesSeleccionadas,
+            programas: programasSeleccionados,
+            participantes: newParticipantes,
         };
-        await saveEvents(newEvent);
-        onCreate(newEvent);
+        await updateEvent(id, newEvent);
     };
-
-    const resetFields = () => {
-        setTitulo("");
-        setCategorias([""]);
-        setDescripcion("");
-        setFecha("");
-        setEstado(true);
-        setNombreEvento("");
-        setDireccion("");
-        setCity("");
-    };
-
-    const handleClose = () => {
-        resetFields();
-        onClose();
-    };
-
-    if (!show) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/3 mt-10 h-3/4 overflow-y-auto">
-                <h2 className="text-lg font-bold mb-4">Crear Evento</h2>
-                <form onSubmit={handleSubmit}>
+        <div className=''>
+            <Sidebar />
+            <div className='flex-grow p-4 ml-72 flex justify-center'>
+            <form onSubmit={handleSubmit} className="w-[500px] my-10">
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="titulo">Título</label>
                         <input type="text" id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
@@ -178,6 +201,7 @@ const Modal = ({ show, onClose, onCreate }) => {
                                         value={facultad.nombre}
                                         onChange={(e) => handleFacultadChange(e.target.checked, facultad.codigo)}
                                         className="mr-2"
+                                        checked={facultad.id === facultadesSeleccionadas.find(facultadSeleccionada => facultadSeleccionada === facultad.codigo) ? false : true}
                                     />
                                     <label htmlFor={`facultad-${index}`}>{facultad.nombre}</label>
                                 </div>
@@ -217,11 +241,13 @@ const Modal = ({ show, onClose, onCreate }) => {
                                 id={`participante-${index}`}
                                 value={participante.nombre}
                                 className="mr-2"
+                                defaultChecked={participante.id === facultadesSeleccionadas.find(facultadSeleccionada => facultadSeleccionada === participante.id) ? false : true}
                             />
                             <label htmlFor={`participante-${index}`} className="mr-4">{participante.nombre}</label>
                             <select
                                 onChange={(e) => handleRoleChange(index, e.target.value, participante.id)}
                                 className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                defaultValue={rolesSeleccionados[participante.id] ? rolesSeleccionados[participante.id].role : ""}
                             >
                                 <option value="">Selecciona un rol</option>
                                 <option value="asistente">Asistente</option>
@@ -252,17 +278,19 @@ const Modal = ({ show, onClose, onCreate }) => {
                         <input type="text" id="lugarDelEventoCiudad" placeholder="Ciudad del lugar" value={city} onChange={(e) => setCity(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button type="button" className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={handleClose}>
-                            Cancelar
-                        </button>
+                        <Link to={'/Events'}>
+                            <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Volver
+                            </button>
+                        </Link>
                         <button type="submit" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Crear
+                            Modificar
                         </button>
                     </div>
                 </form>
             </div>
         </div>
-    );
+    )
 }
 
-export default Modal;
+export default ModifyPlan;
