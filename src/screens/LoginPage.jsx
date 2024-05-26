@@ -3,6 +3,7 @@ import bgImage from '../images/BgLogin.jpg';
 import { Link } from 'react-router-dom';
 import RegisterForm from '../components/RegisterForm';
 import LoginForm from '../components/LoginForm';
+import loginUser from "../services/loginUsers";
 
 const LoginPage = () => {
     const [isRegister, setIsRegister] = useState(false);
@@ -11,11 +12,13 @@ const LoginPage = () => {
         setIsRegister(!isRegister);
     }
 
+
+
     return (
-        <div 
-            className='flex justify-center items-center h-screen' 
+        <div
+            className='flex justify-center items-center h-screen'
             style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-            <div 
+            <div
                 className={`flex flex-col items-center border-x-2 border-y-2 rounded-2xl bg-white neumorphism-container transition-all duration-300 ease-in-out ${isRegister ? 'w-2/3 h-auto' : 'w-80 h-2/3'}`}>
                 <h1 className='mt-4 text-black font-semibold text-xl'>
                     {isRegister ? 'Registro de Usuario' : 'Inicio de sesión'}
