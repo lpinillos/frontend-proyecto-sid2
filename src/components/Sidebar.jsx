@@ -1,7 +1,8 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 
 const Sidebar = () => {
+
+    let user = JSON.parse(localStorage.getItem('user'));
 
     return (
         <>
@@ -10,13 +11,6 @@ const Sidebar = () => {
                     <h1 className='text-white font-semibold flex justify-center pt-4 text-xl font'>Administración de Eventos</h1>
                 </div>
                 <ul>
-                    <li>
-                        <Link to='/MyEvents'>
-                            <div className='text-white font-semibold px-5 py-5 text-lg hover:bg-gray-500'>
-                                Hacer comentario
-                            </div>
-                        </Link>
-                    </li>
                     <li>
                         <Link to='/MyEvents'>
                             <div className='text-white font-semibold px-5 py-5 text-lg hover:bg-gray-500'>
@@ -32,9 +26,11 @@ const Sidebar = () => {
                         </Link>
                     </li>
                     <li>
-                        <div className='text-white font-semibold px-5 py-5 text-lg'>
-                            Luis Pinillos
-                        </div>
+                        {user && 
+                            <div className='text-white font-semibold px-5 py-5 text-lg'>
+                                {user.nombre}
+                            </div>
+                        }
                     </li>
                 </ul>
             </div>

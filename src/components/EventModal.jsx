@@ -1,19 +1,119 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import updateEvent from '../services/updateEvent';
+import getEventById from '../services/myEvents';
+import { Link } from 'react-router-dom';
 
-const EventModal = ({ show, onClose, event, onEdit }) => {
+const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
     const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState("");
+    const [suscribe, setSuscribe] = useState(false);
+    let user = JSON.parse(localStorage.getItem('user'));
+
+    const [newComment, setNewComment] = useState({
+        comentario: "",
+        eventId: "",
+        userId: ""
+    });
+    
+    const handleAddComment = (eventId, userId) => {
+        console.log(newComment);
+        if (newComment.comentario.trim() !== "") {
+            const commentToAdd = {
+                comentario: newComment.comentario,
+                eventId: eventId,
+                userId: userId
+            };
+    
+            setComments([...comments, commentToAdd]);
+            setNewComment({
+                comentario: "",
+                eventId: "",
+                userId: ""
+            });
+        }
+    };
+
+    useEffect(() => {
+        const fetchMyEvents = async () => {
+            try {
+                const response = await getEventById(user.id);
+                const isSubscribed = response.some((e) => e.id == event.id);
+                setSuscribe(isSubscribed);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchMyEvents();
+    }, [event.id, user.id]);
+
+    const handleSubscribe = async (eventToUpdate, user) => {
+        try {
+            const participantesActuales = eventToUpdate.participantes || [];
+    
+            // Verifica si el usuario ya está en la lista de participantes
+            const participanteExistente = participantesActuales.some(participante => participante.id === user.id);
+    
+            if (!participanteExistente) {
+                const nuevoParticipante = {
+                    id: user.id,
+                    usuario: user,
+                    role: "asistente"
+                };
+    
+                const nuevosParticipantes = [...participantesActuales, nuevoParticipante];
+    
+                const response = await updateEvent(eventToUpdate.id, {
+                    ...eventToUpdate,
+                    participantes: nuevosParticipantes
+                });
+    
+                if (response) {
+                    setSuscribe(true);
+                    onMsg("Inscripción exitosa");
+                    handleClose();
+                }
+            } else {
+                const response = await updateEvent(eventToUpdate.id, {
+                    ...eventToUpdate
+                });
+                if (response) {
+                    setSuscribe(true);
+                    onMsg("Inscripción exitosa");
+                    handleClose();
+                }
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDesuscribe = async (eventToUpdate, user) => {
+        try {
+            const participantesActuales = eventToUpdate.participantes || [];
+
+            const nuevosParticipantes = participantesActuales.filter((p) => p.id !== user.id);
+
+            const response = await updateEvent(eventToUpdate.id, {
+                ...event,
+                participantes: nuevosParticipantes
+            });
+
+            if (response) {
+                setSuscribe(false);
+                onMsg("Anulación exitosa");
+                handleClose();
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const handleClose = () => {
+        onClose();
+    };
 
     if (!show) {
         return null;
     }
-
-    const handleAddComment = () => {
-        if (newComment.trim() !== "") {
-            setComments([...comments, newComment]);
-            setNewComment("");
-        }
-    };
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
@@ -44,8 +144,12 @@ const EventModal = ({ show, onClose, event, onEdit }) => {
                             <input
                                 type="text"
                                 className="flex-grow h-10 p-2 border border-gray-400 rounded-l-md"
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
+                                value={newComment.comment}
+                                onChange={(e) => setNewComment({
+                                    comentario: e.target.value,
+                                    eventId: event.id,
+                                    userId: user.id
+                                })}
                                 placeholder="Escribe un comentario..."
                             />
                             <button
@@ -55,17 +159,38 @@ const EventModal = ({ show, onClose, event, onEdit }) => {
                                 Enviar
                             </button>
                         </div>
-                        <button
-                            onClick={onEdit}
-                            className="mt-4 w-full h-10 bg-yellow-500 text-white rounded-md hover:bg-yellow-700"
-                        >
-                            Editar Evento
-                        </button>
+                        <div className='flex gap-3'>
+                            {user && user.rol === "ADMIN" && (
+                            <Link className='w-full' to={`/InfoPlanView/${event.id}`}>
+                                <button
+                                className="mt-4 h-10 w-full bg-yellow-500 text-white rounded-md hover:bg-yellow-700"
+                                >
+                                    Editar Evento
+                                </button>
+                            </Link>
+                            )}
+                            {
+                            suscribe ? 
+                                <button
+                                    className="mt-4 w-full h-10 bg-red-500 hover:bg-red-700 text-white rounded-md"
+                                    onClick={() => handleDesuscribe(event, user)}
+                                >
+                                    Anular
+                                </button>
+                                : 
+                                <button
+                                    className="mt-4 w-full h-10 bg-green-500 text-white rounded-md hover:bg-green-700"
+                                    onClick={() => handleSubscribe(event, user)}
+                                >
+                                    Inscribirse
+                                </button>
+                            }
+                        </div>
                     </div>
                 </div>
                 <div className="p-4 border-t border-gray-300 text-right">
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-700"
                     >
                         Cerrar

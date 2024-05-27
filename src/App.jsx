@@ -1,6 +1,5 @@
 
 import './index.css'
-import Sidebar from './components/Sidebar'
 import EventsPage from './screens/EventsPage'
 import LoginPage from './screens/LoginPage'
 import MyEvents from './screens/MyEvents'

@@ -4,7 +4,7 @@ const GET_EVENT_URL = 'eventos/getEvents'
 
 export default async function getEventById(idEvent) {
     try {
-        const response = await axios.get(GET_EVENT_URL + '/' + idEvent);
+        const response = await axios.post(GET_EVENT_URL + '/' + idEvent);
         return response.data;
     } catch (error) {
         console.error('Error al obtener facultades:', error);

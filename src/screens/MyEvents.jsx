@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
-import allEvents from "../services/allEvents";
 import getUnsplashImage from "../services/unSplash";
-import saveEvents from '../services/createEvent';
 import Modal from '../components/Modal';
 import EventModal from '../components/EventModal';
-import getEventById from '../services/getEventById';
+import getEventById from '../services/myEvents';
 
 const MyEvents = () => {
     const [eventosConImagen, setEventosConImagen] = useState([]);
@@ -16,11 +14,23 @@ const MyEvents = () => {
     const [filterData, setFilterData] = useState("");
     const [titulo, setTitulo] = useState("");
     const [categoria, setCategoria] = useState("");
+    const [msgEvent, setMsgEvent] = useState(null);
+
+    let user = JSON.parse(localStorage.getItem('user'));
+
+    useEffect(() => {
+        if (msgEvent) {
+            const timer = setTimeout(() => {
+                setMsgEvent(null);
+            }, 2000); // 5000 ms = 5 segundos
+            return () => clearTimeout(timer); 
+        }
+    }, [msgEvent]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getEventById();
+                const response = await getEventById(user.id);
                 const eventosConImagenTemp = await Promise.all(response.map(async (evento) => {
                     const imagen = await getUnsplashImage(evento.titulo);
                     return { ...evento, imagen };
@@ -32,7 +42,7 @@ const MyEvents = () => {
         };
 
         fetchData();
-    }, []);
+    }, [user.id]);
 
     useEffect(() => {
         const filtered = eventosConImagen.filter(item => {
@@ -40,7 +50,6 @@ const MyEvents = () => {
             const categoriaMatch = Array.isArray(item.categoria)
                 ? item.categoria.map((categoriaItem) => categoriaItem === categoria ? categoria : null)
                 : [];
-            console.log(categoriaMatch)
             return titleMatch && categoriaMatch;
         });
 
@@ -61,6 +70,7 @@ const MyEvents = () => {
     };
 
     const handleEventClick = (event) => {
+        console.log(event);
         setSelectedEvent(event);
         setShowEventModal(true);
     };
@@ -113,9 +123,18 @@ const MyEvents = () => {
                         onClose={handleCloseEventModal}
                         event={selectedEvent}
                         onEdit={handleEditEvent}
+                        onMsg={setMsgEvent}
                     />
                 )}
             </div>
+            {
+                msgEvent && (
+                    <div
+                    className={`fixed text-center right-0 bottom-0 mb-10 mr-10 block w-[250px] p-4 text-base leading-5 text-white ${msgEvent === "Anulación exitosa" ? 'bg-red-500' : 'bg-green-500'} rounded-lg opacity-100 font-regular`}>
+                        {msgEvent}
+                  </div>
+                )
+            }
         </div>
     );
 }
