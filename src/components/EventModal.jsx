@@ -13,16 +13,21 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
         eventId: "",
         userId: ""
     });
+
+    const handleCommentChange = (e) => {
+        setNewComment({
+            ...newComment,
+            comentario: e.target.value
+        });
+    };
     
-    const handleAddComment = (eventId, userId) => {
-        console.log(newComment);
+    const handleAddComment = () => {
         if (newComment.comentario.trim() !== "") {
             const commentToAdd = {
                 comentario: newComment.comentario,
-                eventId: eventId,
-                userId: userId
-            };
-    
+                eventId: event.id,
+                userId: user.id
+            };    
             setComments([...comments, commentToAdd]);
             setNewComment({
                 comentario: "",
@@ -134,7 +139,9 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
                         <div className="flex-grow overflow-y-auto mb-4 pr-2" style={{ maxHeight: '200px' }}>
                             {comments.length > 0 ? (
                                 comments.map((comment, index) => (
-                                    <p key={index} className="border-b border-gray-300 py-2 text-gray-700">{comment}</p>
+                                    comment.eventId === event.id ? (
+                                        <p key={index} className="border-b border-gray-300 py-2 text-gray-700">{comment.comentario}</p>
+                                    ) : null
                                 ))
                             ) : (
                                 <p className="text-gray-600">No hay comentarios aún.</p>
@@ -142,15 +149,11 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
                         </div>
                         <div className="flex">
                             <input
-                                type="text"
                                 className="flex-grow h-10 p-2 border border-gray-400 rounded-l-md"
-                                value={newComment.comment}
-                                onChange={(e) => setNewComment({
-                                    comentario: e.target.value,
-                                    eventId: event.id,
-                                    userId: user.id
-                                })}
-                                placeholder="Escribe un comentario..."
+                                type="text"
+                                value={newComment.comentario}
+                                onChange={handleCommentChange}
+                                placeholder="Añadir un comentario"
                             />
                             <button
                                 onClick={handleAddComment}
