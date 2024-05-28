@@ -130,7 +130,7 @@ const EventsPage = () => {
               } else if (eventDate === currentDate) {
                 eventStatus = "En curso";
               } else {
-                eventStatus = "Próximamente";
+                eventStatus = "Disponible";
               }
               return (
                 <div

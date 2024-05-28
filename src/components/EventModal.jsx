@@ -2,18 +2,19 @@ import { useEffect, useState } from "react";
 import updateEvent from "../services/updateEvent";
 import getEventById from "../services/myEvents";
 import { Link } from "react-router-dom";
+import saveComment from "../services/saveComment";
 
 const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
   const [comments, setComments] = useState(event.comentarios || []);
   const [suscribe, setSuscribe] = useState(false);
-  let user = JSON.parse(localStorage.getItem("user"));
-
   const [newComment, setNewComment] = useState({
     comentario: "",
     eventId: "",
     userId: "",
   });
 
+  let user = JSON.parse(localStorage.getItem("user"));
+  
   const handleCommentChange = (e) => {
     setNewComment({
       ...newComment,
@@ -21,19 +22,42 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
     });
   };
 
+  useEffect(() => {
+    setComments(event.comentarios || []);
+  }, [event.comentarios, onClose]);
+
   const handleAddComment = () => {
+
+    let fecha = new Date();
+    let año = fecha.getFullYear();
+    let mes = ('0' + (fecha.getMonth() + 1)).slice(-2);
+    let dia = ('0' + fecha.getDate()).slice(-2);
+
+    let fechaFormateada = `${año}-${mes}-${dia}`;
+
     if (newComment.comentario.trim() !== "") {
       const commentToAdd = {
-        comentario: newComment.comentario,
+        contenido: newComment.comentario,
+        username: user.nombre,
+        fecha: fechaFormateada,
         eventId: event.id,
         userId: user.id,
       };
-      setComments([...comments, commentToAdd]);
-      setNewComment({
-        comentario: "",
-        eventId: "",
-        userId: "",
-      });
+
+      const response = saveComment(event.id, commentToAdd);
+
+      if (response) {
+        setComments((prevComments) => [...prevComments, commentToAdd]);
+  
+        event.comentarios = [...(event.comentarios || []), commentToAdd];
+  
+        setNewComment({
+          comentario: "",
+          eventId: "",
+          userId: "",
+        });
+      }
+
     }
   };
 
@@ -54,7 +78,6 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
     try {
       const participantesActuales = eventToUpdate.participantes || [];
 
-      // Verifica si el usuario ya está en la lista de participantes
       const participanteExistente = participantesActuales.some(
         (participante) => participante.id === user.id
       );
@@ -155,8 +178,8 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
               className="flex-grow overflow-y-auto mb-4 pr-2"
               style={{ maxHeight: "200px" }}
             >
-              {event.comentarios && event.comentarios.length > 0 ? (
-                event.comentarios.map((comment, index) => (
+              {comments && comments.length > 0 ? (
+                comments.map((comment, index) => (
                   <div
                     key={index}
                     className="p-4 mb-4 border rounded-lg shadow-sm bg-white"
@@ -212,20 +235,22 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
                   </button>
                 </Link>
               )}
-              {suscribe ? (
-                <button
-                  className="mt-4 w-full h-10 bg-red-500 hover:bg-red-700 text-white rounded-md"
-                  onClick={() => handleDesuscribe(event, user)}
-                >
-                  Anular
-                </button>
-              ) : (
-                <button
-                  className="mt-4 w-full h-10 bg-green-500 text-white rounded-md hover:bg-green-700"
-                  onClick={() => handleSubscribe(event, user)}
-                >
-                  Inscribirse
-                </button>
+              {new Date(event.fecha) > new Date() && (
+                suscribe ? (
+                  <button
+                    className="mt-4 w-full h-10 bg-red-500 hover:bg-red-700 text-white rounded-md"
+                    onClick={() => handleDesuscribe(event, user)}
+                  >
+                    Anular
+                  </button>
+                ) : (
+                  <button
+                    className="mt-4 w-full h-10 bg-green-500 text-white rounded-md hover:bg-green-700"
+                    onClick={() => handleSubscribe(event, user)}
+                  >
+                    Inscribirse
+                  </button>
+                )
               )}
             </div>
           </div>
