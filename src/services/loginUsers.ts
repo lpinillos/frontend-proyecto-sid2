@@ -6,7 +6,6 @@ const LOGIN_USERS_URL = 'usuarios/';
 const loginUser = async (nombre, password) => {
     try {
         const response = await axios.post(LOGIN_USERS_URL + nombre + '/' + password);
-        console.log("ESTA ES LA RESPUESTA: " + response);
         return response.data;
     } catch (error) {
         console.error('Error al iniciar sesión:', error);

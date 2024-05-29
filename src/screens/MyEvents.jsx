@@ -42,7 +42,7 @@ const MyEvents = () => {
         };
 
         fetchData();
-    }, [user.id]);
+    }, [user.id, msgEvent]);
 
     useEffect(() => {
         const filtered = eventosConImagen.filter(item => {
@@ -70,7 +70,6 @@ const MyEvents = () => {
     };
 
     const handleEventClick = (event) => {
-        console.log(event);
         setSelectedEvent(event);
         setShowEventModal(true);
     };

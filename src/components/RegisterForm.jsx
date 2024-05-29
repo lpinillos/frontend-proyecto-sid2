@@ -1,14 +1,16 @@
 // RegisterForm.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import findEmpleado from "../services/findEmpleado";
 import registerUser from "../services/registerUser";
+import getCity from "../services/getCity";
+import getCityById from "../services/getCityById";
+import registerEmpleado from "../services/registerEmpleado";
 
 const RegisterForm = () => {
 
     const [userExist, setUserExist] = useState(false);
-    const [shouldRegisterUser, setShouldRegisterUser] = useState(false); // Renombrado para mayor claridad
+    const [shouldRegisterUser, setShouldRegisterUser] = useState(false);
     const [codigo, setCodigo] = useState("");
-
     const [nombreUsuario, setNombreUsuario] = useState("");
     const [nombre, setNombre] = useState("");
     const [password, setPassword] = useState("");
@@ -16,15 +18,24 @@ const RegisterForm = () => {
     const [ciudad, setCiudad] = useState("");
     const [institucion, setInstitucion] = useState("");
     const [correo, setCorreo] = useState("");
+    const [city, setCity] = useState([]);
+    const [responseUser, setResponseUser] = useState(null);
+
+    useEffect(() => {
+        const fetchCity = async () => {
+            const response = await getCity();
+            setCity(response);
+        }
+        fetchCity();
+    }, []);
 
     const handleUserExist = async (event) => {
         const newCodigo = event.target.value;
         setCodigo(newCodigo);
-        console.log(newCodigo);
         if (newCodigo === "") {
-            console.log("ENTRO AL FOKIN IF");
             setUserExist(false);
             setShouldRegisterUser(false);
+            setResponseUser(null);
             return;
         }
 
@@ -33,39 +44,42 @@ const RegisterForm = () => {
         if (response) {
             setUserExist(true);
             setShouldRegisterUser(false);
-
+            setResponseUser(response);
         } else {
             setShouldRegisterUser(true);
             setUserExist(false);
+            setResponseUser(null);
         }
     }
 
-    const handleExistSubmit = (event) => {
+    const handleExistSubmit = async (event) => {
         event.preventDefault();
-        console.log("ENTRA AQUI AAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (password === confirmPassword) {
-            console.log("ENTRA AQUIIIIIIIIIIIIIIIIIIIIIIIIIIII");
-            // Aquí puedes agregar la lógica para el caso donde el usuario ya exista
+            await registerEmpleado(nombreUsuario, password, responseUser)
+            window.location.href = '/';
         }
     }
 
     const handleNotExistSubmit = async (event) => {
         event.preventDefault();
-        console.log("ENTRA FOKIN AQUI EN REGISTER");
         if (password === confirmPassword) {
+            
+            const city = await getCityById(ciudad);
+
             const user = {
-                id:codigo,
-                nombreUsuario,
-                nombre,
-                password,
-                ciudad,
-                tipoRelacion:institucion,
-                email:correo
+                "id": codigo,
+                "password": password,
+                "rol": "VIEWER",
+                "nombreUsuario": nombreUsuario,
+                "nombre": nombre,
+                "tipoRelacion": institucion,
+                "email": correo,
+                "ciudad": city,
             };
+
             try {
-                const response = await registerUser(user);
-                console.log(response);
-                // Aquí puedes manejar la respuesta exitosa del registro del usuario
+                await registerUser(user);
+                window.location.href = '/';
             } catch (error) {
                 console.error('Error al registrar el usuario:', error);
             }
@@ -82,7 +96,7 @@ const RegisterForm = () => {
                     <>
                         <form onSubmit={handleExistSubmit}>
                             <div className="flex flex-col justify-center items-center">
-                                <input type="text" placeholder='Ingrese el usuario que desee' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' />
+                                <input type="text" placeholder='Ingrese su nombre de usuario' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={nombreUsuario} onChange={(e) => setNombreUsuario(e.target.value)} />
                                 <input type="password" placeholder='Ingrese la contraseña para su nueva cuenta' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={password} onChange={(e) => setPassword(e.target.value)} />
                                 <input type="password" placeholder='Confirme la contraseña' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                                 <button className="w-52 h-10 rounded-xl border-none neumorphism-button transition-all">Crear cuenta</button>
@@ -97,7 +111,12 @@ const RegisterForm = () => {
                                 <div className='flex flex-col w-1/2 h-72 items-center justify-center'>
                                     <input type="text" placeholder='Ingrese su nombre de usuario' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={nombreUsuario} onChange={(e) => setNombreUsuario(e.target.value)} />
                                     <input type="text" placeholder='Ingrese su nombre completo' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={nombre} onChange={(e) => setNombre(e.target.value)} />
-                                    <input type="text" placeholder='Ingrese su ciudad de origen' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={ciudad} onChange={(e) => setCiudad(e.target.value)} />
+                                    <select className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
+                                        <option value=''>Seleccione su ciudad</option>
+                                        {city.map((city, index) => (
+                                            <option key={index} value={city.codigo}>{city.nombre}</option>
+                                        ))}
+                                    </select>
                                     <input type="text" placeholder='Ingrese su relación con la institución' className='w-96 h-10 mb-5 pl-4 border-transparent neumorphism-input' value={institucion} onChange={(e) => setInstitucion(e.target.value)} />
                                 </div>
                                 {/*SEGUNDA COLUMNA*/}

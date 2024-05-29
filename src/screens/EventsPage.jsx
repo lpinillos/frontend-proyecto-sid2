@@ -4,6 +4,7 @@ import allEvents from "../services/allEvents";
 import getUnsplashImage from "../services/unSplash";
 import Modal from "../components/Modal";
 import EventModal from "../components/EventModal";
+import getRecommendedEvents from "../services/getRecommendedEvents";
 
 const EventsPage = () => {
   const [eventosConImagen, setEventosConImagen] = useState([]);
@@ -14,6 +15,7 @@ const EventsPage = () => {
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
   const [msgEvent, setMsgEvent] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   let user = JSON.parse(localStorage.getItem("user"));
 
@@ -46,6 +48,24 @@ const EventsPage = () => {
   }, []);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getRecommendedEvents(user.id);
+        const eventosConImagenTemp = await Promise.all(
+          response.map(async (evento) => {
+            const imagen = await getUnsplashImage(evento.titulo);
+            return { ...evento, imagen };
+          })
+        );
+        setRecommendations(eventosConImagenTemp);
+      } catch (error) {
+        setRecommendations([]);
+      }
+    };
+    fetchData();
+  }, [user.id, msgEvent]);
+
+  useEffect(() => {
     const filtered = eventosConImagen.filter((item) => {
       const titleMatch = item.titulo
         .toLowerCase()
@@ -59,7 +79,7 @@ const EventsPage = () => {
     });
 
     setFilterData(filtered);
-  }, [eventosConImagen, titulo]);
+  }, [categoria, eventosConImagen, titulo]);
 
   const handleCreateEventClick = () => {
     setShowModal(true);
@@ -119,6 +139,67 @@ const EventsPage = () => {
             </button>
           )}
         </div>
+        <section>
+          {recommendations.length > 0 && (
+            <h1 className="text-2xl font-semibold text-center mb-10">
+              Eventos recomendados 🔥
+            </h1>
+          )}
+          {recommendations.length > 0 && (
+            <div className="flex flex-wrap justify-center">
+              {recommendations.map((evento) => {
+                const currentDate = new Date().toISOString().split("T")[0];
+                const eventDate = evento.fecha;
+                let eventStatus = "";
+                if (eventDate < currentDate) {
+                  eventStatus = "Terminado";
+                } else if (eventDate === currentDate) {
+                  eventStatus = "En curso";
+                } else {
+                  eventStatus = "Disponible";
+                }
+                return (
+                  <div
+                    key={evento.id}
+                    className="lg:w-1/4 md:w-1/2 p-4 w-full rounded-lg shadow-md border border-gray-800 hover:scale-105 transition-all mx-4 mb-8"
+                    onClick={() => handleEventClick(evento)}
+                  >
+                    <div className="block relative h-48 rounded">
+                      <img
+                        className="object-cover object-center w-full h-full block"
+                        src={evento.imagen || "default-image-url.jpg"}
+                        alt={evento.titulo}
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex items-center gap-5 justify-between mb-4">
+                        <h2 className="text-black text-xs tracking-widest title-font mb-1">
+                          {evento.fecha}
+                        </h2>
+                        <p
+                          className={`text-sm rounded py-1 px-2 w-auto ${
+                            eventStatus === "Terminado"
+                              ? "bg-red-500 text-white"
+                              : eventStatus === "En curso"
+                              ? "bg-yellow-500 text-white"
+                              : "bg-green-500 text-white"
+                          }`}
+                        >
+                          {eventStatus}
+                        </p>
+                      </div>
+                      <h2 className="text-black title-font text-lg font-medium hover:text-hover-orange">
+                        {evento.titulo}
+                      </h2>
+                      <p className="mt-1">{evento.descripcion}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+        <h1 className="text-2xl font-semibold text-center mb-10">Eventos 🙂</h1>
         {Array.isArray(eventosConImagen) && eventosConImagen.length > 0 ? (
           <div className="flex flex-wrap justify-center">
             {filterData.map((evento) => {
