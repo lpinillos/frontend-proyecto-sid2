@@ -23,7 +23,7 @@ const MyEvents = () => {
             const timer = setTimeout(() => {
                 setMsgEvent(null);
             }, 2000); // 5000 ms = 5 segundos
-            return () => clearTimeout(timer); 
+            return () => clearTimeout(timer);
         }
     }, [msgEvent]);
 
@@ -89,10 +89,17 @@ const MyEvents = () => {
             <div className="ml-80">
             </div>
             <div className='flex-grow p-4 ml-72'>
-                <div className='flex justify-end'>
+                <div className='flex justify-end mb-10'>
                     <input type="text" placeholder="Titulo del Evento" className="w-3/4 h-10 mr-4 p-2 border border-black rounded-md" value={titulo} onChange={e => setTitulo(e.target.value)} />
                     <input type="text" placeholder="Categoria" className="w-2/5 h-10 mr-8 p-2 border border-black rounded-md" value={categoria} onChange={e => setCategoria(e.target.value)} />
-                    <button onClick={handleCreateEventClick} className='w-36 h-10 border bg-gray-700 text-white font-semibold hover:bg-gray-900 rounded-lg mb-10 flex justify-center items-center'>Crear Evento</button>
+                    {user && user.rol === "ADMIN" && (
+                        <button
+                            onClick={handleCreateEventClick}
+                            className="w-36 h-10 border bg-gray-700 text-white font-semibold hover:bg-gray-900 rounded-lg flex justify-center items-center"
+                        >
+                            Crear Evento
+                        </button>
+                    )}
                 </div>
                 {Array.isArray(eventosConImagen) && eventosConImagen.length > 0 ? (
                     <div className='flex flex-wrap justify-center'>
@@ -130,9 +137,9 @@ const MyEvents = () => {
             {
                 msgEvent && (
                     <div
-                    className={`fixed text-center right-0 bottom-0 mb-10 mr-10 block w-[250px] p-4 text-base leading-5 text-white ${msgEvent === "Anulación exitosa" ? 'bg-red-500' : 'bg-green-500'} rounded-lg opacity-100 font-regular`}>
+                        className={`fixed text-center right-0 bottom-0 mb-10 mr-10 block w-[250px] p-4 text-base leading-5 text-white ${msgEvent === "Anulación exitosa" ? 'bg-red-500' : 'bg-green-500'} rounded-lg opacity-100 font-regular`}>
                         {msgEvent}
-                  </div>
+                    </div>
                 )
             }
         </div>

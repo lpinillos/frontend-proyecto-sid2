@@ -35,7 +35,7 @@ const LoginForm = () => {
         <>
             <form onSubmit={handleSubmit} className='flex flex-col items-center'>
                 <input type="text" placeholder='Ingrese su usuario' className='w-full h-10 mb-10 pl-4 border-transparent neumorphism-input' value={username} onChange={handleUsername} />
-                <input type="text" placeholder='Ingrese su contraseña' className='w-full h-10 mb-10 pl-4 neumorphism-input' value={password} onChange={handlePassword} />
+                <input type="password" placeholder='Ingrese su contraseña' className='w-full h-10 mb-10 pl-4 neumorphism-input' value={password} onChange={handlePassword} />
                 {errorMessage && (<div className='text-red-500 mb-4'>{errorMessage}</div>)}
                 <button type='submit' className='w-52 h-10 rounded-xl mt-10 border-none neumorphism-button'>Ingresar</button>
             </form>

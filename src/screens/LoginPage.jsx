@@ -3,7 +3,6 @@ import bgImage from '../images/BgLogin.jpg';
 import { Link } from 'react-router-dom';
 import RegisterForm from '../components/RegisterForm';
 import LoginForm from '../components/LoginForm';
-import loginUser from "../services/loginUsers";
 
 const LoginPage = () => {
     const [isRegister, setIsRegister] = useState(false);
