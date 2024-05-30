@@ -67,19 +67,17 @@ const EventsPage = () => {
 
   useEffect(() => {
     const filtered = eventosConImagen.filter((item) => {
-      const titleMatch = item.titulo
-        .toLowerCase()
-        .includes(titulo.toLowerCase());
-      const categoriaMatch = Array.isArray(item.categoria)
-        ? item.categoria.map((categoriaItem) =>
-            categoriaItem === categoria ? categoria : null
-          )
-        : [];
+      const titleMatch = item.titulo.toLowerCase().includes(titulo.toLowerCase());
+      const categoriaMatch = categoria === "" || item.categoria.some(categoriaItem =>
+        categoriaItem.toLowerCase().includes(categoria.toLowerCase())
+      );
       return titleMatch && categoriaMatch;
     });
-
+  
     setFilterData(filtered);
   }, [categoria, eventosConImagen, titulo]);
+  
+
 
   const handleCreateEventClick = () => {
     setShowModal(true);
@@ -142,7 +140,7 @@ const EventsPage = () => {
         <section>
           {recommendations.length > 0 && (
             <h1 className="text-2xl font-semibold text-center mb-10">
-              Eventos recomendados 🔥
+              Eventos recomendados
             </h1>
           )}
           {recommendations.length > 0 && (
@@ -177,13 +175,12 @@ const EventsPage = () => {
                           {evento.fecha}
                         </h2>
                         <p
-                          className={`text-sm rounded py-1 px-2 w-auto ${
-                            eventStatus === "Terminado"
+                          className={`text-sm rounded py-1 px-2 w-auto ${eventStatus === "Terminado"
                               ? "bg-red-500 text-white"
                               : eventStatus === "En curso"
-                              ? "bg-yellow-500 text-white"
-                              : "bg-green-500 text-white"
-                          }`}
+                                ? "bg-yellow-500 text-white"
+                                : "bg-green-500 text-white"
+                            }`}
                         >
                           {eventStatus}
                         </p>
@@ -199,7 +196,7 @@ const EventsPage = () => {
             </div>
           )}
         </section>
-        <h1 className="text-2xl font-semibold text-center mb-10">Eventos 🙂</h1>
+        <h1 className="text-2xl font-semibold text-center mb-10">Eventos</h1>
         {Array.isArray(eventosConImagen) && eventosConImagen.length > 0 ? (
           <div className="flex flex-wrap justify-center">
             {filterData.map((evento) => {
@@ -232,13 +229,12 @@ const EventsPage = () => {
                         {evento.fecha}
                       </h2>
                       <p
-                        className={`text-sm rounded py-1 px-2 w-auto ${
-                          eventStatus === "Terminado"
+                        className={`text-sm rounded py-1 px-2 w-auto ${eventStatus === "Terminado"
                             ? "bg-red-500 text-white"
                             : eventStatus === "En curso"
-                            ? "bg-yellow-500 text-white"
-                            : "bg-green-500 text-white"
-                        }`}
+                              ? "bg-yellow-500 text-white"
+                              : "bg-green-500 text-white"
+                          }`}
                       >
                         {eventStatus}
                       </p>
@@ -274,9 +270,8 @@ const EventsPage = () => {
       </div>
       {msgEvent && (
         <div
-          className={`fixed text-center right-0 bottom-0 mb-10 mr-10 block w-[250px] p-4 text-base leading-5 text-white ${
-            msgEvent === "Anulación exitosa" ? "bg-red-500" : "bg-green-500"
-          } rounded-lg opacity-100 font-regular`}
+          className={`fixed text-center right-0 bottom-0 mb-10 mr-10 block w-[250px] p-4 text-base leading-5 text-white ${msgEvent === "Anulación exitosa" ? "bg-red-500" : "bg-green-500"
+            } rounded-lg opacity-100 font-regular`}
         >
           {msgEvent}
         </div>

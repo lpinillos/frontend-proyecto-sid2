@@ -89,7 +89,7 @@ const RegisterForm = () => {
     return (
         <>
             <div className="flex justify-center items-center mb-10">
-                <input type="text" placeholder='Ingrese código de colaborador/estudiante' className='w-96 h-10 pl-4 border-transparent neumorphism-input' value={codigo} onChange={handleUserExist} />
+                <input type="text" placeholder='Ingrese identificación' className='w-96 h-10 pl-4 border-transparent neumorphism-input' value={codigo} onChange={handleUserExist} />
             </div>
             <div>
                 {userExist ? (

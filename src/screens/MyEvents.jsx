@@ -113,7 +113,7 @@ const MyEvents = () => {
                                 </div>
                                 <div className="mt-4">
                                     <h2 className='text-black text-xs tracking-widest title-font mb-1'>{evento.fecha}</h2>
-                                    <h2 className="text-black title-font text-lg font-medium hover:text-hover-orange"><Link to={`/InfoPlanView/${evento.id}`}>{evento.titulo}</Link></h2>
+                                    <h2 className="text-black title-font text-lg font-medium hover:text-hover-orange">{evento.titulo}</h2>
                                     <p className="mt-1">{evento.descripcion}</p>
                                 </div>
                             </div>

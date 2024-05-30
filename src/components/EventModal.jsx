@@ -371,11 +371,13 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
             </div>
             <div className="flex gap-3">
               {user && user.rol === "ADMIN" && (
-                <Link className="w-full" to={`/InfoPlanView/${event.id}`}>
-                  <button className="mt-4 h-10 w-full bg-yellow-500 text-white rounded-md hover:bg-yellow-700">
-                    Editar Evento
-                  </button>
-                </Link>
+                <>
+                  <Link className="w-full" to={`/InfoPlanView/${event.id}`}>
+                    <button className="mt-4 h-10 w-full bg-yellow-500 text-white rounded-md hover:bg-yellow-700">
+                      Editar Evento
+                    </button>
+                  </Link>
+                </>
               )}
               {new Date(event.fecha) > new Date() &&
                 (suscribe ? (
@@ -399,8 +401,11 @@ const EventModal = ({ show, onClose, event, onEdit, onMsg }) => {
         <div className="p-4 border-t border-gray-300 text-right flex justify-between items-center">
           <div className="flex items-center">
             <FaUser className="text-gray-600" />
-            <p className="text-gray-600 ml-2">
-              {event.participantes?.length || 0} Participantes
+            <p className="text-gray-600 ml-2 hover:text-gray-800 hover:font-semibold">
+              {event.participantes?.length || 0}
+              <Link to={`/Participants/${event.id}`} className="ml-1">
+              Participantes
+              </Link>
             </p>
           </div>
           <button

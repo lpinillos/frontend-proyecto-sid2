@@ -5,6 +5,7 @@ import LoginPage from './screens/LoginPage'
 import MyEvents from './screens/MyEvents'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ModifyPlan from './screens/ModifyPlan';
+import Participants from './screens/Participants';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/MyEvents" element={<MyEvents/>} />
         <Route path="/Events" element={<EventsPage/>} />
         <Route path="/InfoPlanView/:id" element={<ModifyPlan/>} />
+        <Route path="/Participants/:idEvent" element={<Participants/>} />
       </Routes>
     </Router>
   )
